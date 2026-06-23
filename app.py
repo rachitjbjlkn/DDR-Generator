@@ -54,7 +54,17 @@ def process_files(job_id, doc1_path, doc2_path):
 
         status["step"] = "Building PDF report..."
         status["progress"] = 75
-        all_images = doc1["images"] + doc2["images"]
+        seen_refs = set()
+        all_images = []
+        for img in doc1["images"] + doc2["images"]:
+            ref = img.get("ref", "")
+            if ref and ref not in seen_refs:
+                seen_refs.add(ref)
+                all_images.append(img)
+                if len(all_images) >= 50:
+                    break
+        if not all_images:
+            all_images = (doc1["images"] + doc2["images"])[:10]
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_filename = f"DDR_Report_{timestamp}_{job_id[:8]}.pdf"
         output_path = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
