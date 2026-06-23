@@ -160,8 +160,8 @@ def cleanup(job_id):
 
 
 if __name__ == '__main__':
-    port = 5000
+    port = int(os.getenv("PORT", 5000))
     print(f"\n  DDR App running at http://localhost:{port}")
     print("  Opening browser...\n")
     webbrowser.open(f"http://localhost:{port}")
-    app.run(debug=False, port=port)
+    app.run(debug=False, port=port, host="0.0.0.0")
