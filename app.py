@@ -5,10 +5,7 @@ import threading
 import json
 import webbrowser
 from datetime import datetime
-from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, send_from_directory
-
-load_dotenv()
 
 from extractor import extract_pdf_content
 from ai_analyzer import analyze_documents
@@ -30,14 +27,14 @@ def process_files(job_id, doc1_path, doc2_path):
     try:
         status["step"] = "Extracting Document 1..."
         status["progress"] = 15
-        doc1 = extract_pdf_content(doc1_path)
+        doc1 = extract_pdf_content(doc1_path, "doc1")
         status["pages_1"] = doc1["pages"]
         status["images_1"] = len(doc1["images"])
         status["log"].append(f"Extracted Doc 1: {doc1['pages']} pages, {len(doc1['images'])} images")
 
         status["step"] = "Extracting Document 2..."
         status["progress"] = 30
-        doc2 = extract_pdf_content(doc2_path)
+        doc2 = extract_pdf_content(doc2_path, "doc2")
         status["pages_2"] = doc2["pages"]
         status["images_2"] = len(doc2["images"])
         status["log"].append(f"Extracted Doc 2: {doc2['pages']} pages, {len(doc2['images'])} images")
@@ -160,8 +157,8 @@ def cleanup(job_id):
 
 
 if __name__ == '__main__':
-    port = int(os.getenv("PORT", 5000))
+    port = 5000
     print(f"\n  DDR App running at http://localhost:{port}")
     print("  Opening browser...\n")
     webbrowser.open(f"http://localhost:{port}")
-    app.run(debug=False, port=port, host="0.0.0.0")
+    app.run(debug=False, port=port)

@@ -1,6 +1,6 @@
 import fitz
 
-def extract_pdf_content(pdf_path: str) -> dict:
+def extract_pdf_content(pdf_path: str, doc_prefix: str = "doc") -> dict:
     doc = fitz.open(pdf_path)
     full_text = ""
     images = []
@@ -12,7 +12,7 @@ def extract_pdf_content(pdf_path: str) -> dict:
 
         for img_index, img in enumerate(page.get_images(full=True)):
             xref = img[0]
-            ref = f"image_page_{page_num}_index_{img_index}"
+            ref = f"{doc_prefix}_image_page_{page_num}_index_{img_index}"
 
             if xref in seen_xrefs:
                 images.append({

@@ -125,6 +125,7 @@ CRITICAL RULES:
 - Merge related findings from both documents logically.
 - For image_ref, ONLY use values from the AVAILABLE IMAGE REFERENCES list above.
   NEVER invent image_ref values. If none match, set image_ref to "Not Available".
+  Document 1 image refs start with "doc1_", Document 2 image refs with "doc2_".
 
 Return ONLY a valid JSON object. No preamble. No markdown fences. No explanation.
 Start your response with { and end with }
