@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDR Generator - Processing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="brand">DDR <span>Generator</span></div>
+      <span class="badge" id="statusBadge">Processing</span>
+    </header>
+
+    <main class="main-content processing-content" id="processingView">
+      <div class="hero">
+        <div class="hero-graphic">
+          <div class="hero-ring thick"></div>
+          <div class="hero-ring"></div>
+          <div class="hero-ring thick"></div>
+          <div class="hero-inner">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+          </div>
+        </div>
+        <h1 id="statusTitle">Analyzing Documents</h1>
+        <p id="statusDesc">Extracting key data from your uploaded files.</p>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <p class="progress-text" id="progressText">0%</p>
+      </div>
+
+      <div class="timeline" id="timeline">
+        <div class="timeline-item" data-step="1">
+          <div class="timeline-icon pending">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="timeline-body">
+            <div class="timeline-label">Extracting Document 1</div>
+            <div class="timeline-meta" id="step1meta">Pending</div>
+          </div>
+        </div>
+        <div class="timeline-item" data-step="2">
+          <div class="timeline-icon pending">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="timeline-body">
+            <div class="timeline-label">Extracting Document 2</div>
+            <div class="timeline-meta" id="step2meta">Pending</div>
+          </div>
+        </div>
+        <div class="timeline-item" data-step="3">
+          <div class="timeline-icon pending">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="timeline-body">
+            <div class="timeline-label">Running AI Analysis</div>
+            <div class="timeline-meta" id="step3meta">Pending</div>
+          </div>
+        </div>
+        <div class="timeline-item" data-step="4">
+          <div class="timeline-icon pending">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="timeline-body">
+            <div class="timeline-label">Building PDF Report</div>
+            <div class="timeline-meta" id="step4meta">Pending</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="stat-count blue" id="statPages">-</div>
+          <div class="stat-label">Total Pages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+          </div>
+          <div class="stat-count purple" id="statImages">-</div>
+          <div class="stat-label">Images Found</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="stat-count orange" id="statAreas">-</div>
+          <div class="stat-label">Areas Found</div>
+        </div>
+      </div>
+    </main>
+
+    <div class="result-content" id="resultView" style="display:none">
+      <div class="hero">
+        <div class="success-graphic">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h1>Report Generated</h1>
+        <p id="resultSummary">Your DDR report has been created successfully.</p>
+      </div>
+
+      <div class="result-card">
+        <div class="result-info">
+          <div class="result-row">
+            <span class="result-label">Severity</span>
+            <span class="result-value" id="resultSeverity">-</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Areas Analyzed</span>
+            <span class="result-value" id="resultAreas">-</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Total Pages</span>
+            <span class="result-value" id="resultPages">-</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Images</span>
+            <span class="result-value" id="resultImages">-</span>
+          </div>
+        </div>
+        <a class="btn-primary download-btn" id="downloadBtn">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+          </svg>
+          Download DDR Report
+        </a>
+      </div>
+
+      <button class="btn-secondary" onclick="window.location.href='/'">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+        Generate Another Report
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const jobId = '{{ job_id }}';
+    let pollTimer = null;
+
+    function updateTimeline(step, progress) {
+      const items = document.querySelectorAll('.timeline-item');
+      items.forEach((item, i) => {
+        const idx = i + 1;
+        const icon = item.querySelector('.timeline-icon');
+        const meta = item.querySelector('.timeline-meta');
+
+        if (idx < step) {
+          icon.className = 'timeline-icon completed';
+          icon.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+          meta.textContent = 'Complete';
+        } else if (idx === step) {
+          icon.className = 'timeline-icon active';
+          icon.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>';
+          meta.textContent = 'Processing...';
+        } else {
+          icon.className = 'timeline-icon pending';
+          icon.innerHTML = '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+          meta.textContent = 'Pending';
+        }
+      });
+    }
+
+    function updateStats(data) {
+      const totalPages = (data.pages_1 || 0) + (data.pages_2 || 0);
+      const totalImages = (data.images_1 || 0) + (data.images_2 || 0);
+      document.getElementById('statPages').textContent = totalPages || '-';
+      document.getElementById('statImages').textContent = totalImages || '-';
+      document.getElementById('statAreas').textContent = data.observations || '-';
+    }
+
+    function showResult(data) {
+      document.getElementById('processingView').style.display = 'none';
+      document.getElementById('resultView').style.display = 'flex';
+      document.getElementById('statusBadge').textContent = 'Complete';
+
+      document.getElementById('resultSeverity').textContent = data.overall_severity || 'N/A';
+      document.getElementById('resultAreas').textContent = data.observations || '-';
+
+      const totalPages = (data.pages_1 || 0) + (data.pages_2 || 0);
+      const totalImages = (data.images_1 || 0) + (data.images_2 || 0);
+      document.getElementById('resultPages').textContent = totalPages;
+      document.getElementById('resultImages').textContent = totalImages;
+
+      const severityEl = document.getElementById('resultSeverity');
+      const sevColors = { Critical: '#DC2626', High: '#EA580C', Medium: '#D97706', Low: '#16A34A' };
+      severityEl.style.color = sevColors[data.overall_severity] || '#666';
+
+      const severity = data.overall_severity || 'N/A';
+      document.getElementById('resultSummary').textContent =
+        severity === 'Critical' || severity === 'High'
+          ? 'Significant findings identified. Prompt action recommended.'
+          : 'Minor findings detected. Routine attention advised.';
+
+      const downloadBtn = document.getElementById('downloadBtn');
+      if (data.output_file) {
+        downloadBtn.href = '/download/' + data.output_file;
+        downloadBtn.style.display = 'flex';
+      }
+    }
+
+    async function pollStatus() {
+      try {
+        const resp = await fetch('/status/' + jobId);
+        const data = await resp.json();
+
+        if (data.error) {
+          document.getElementById('statusTitle').textContent = 'Error';
+          document.getElementById('statusDesc').textContent = data.error;
+          clearInterval(pollTimer);
+          return;
+        }
+
+        document.getElementById('statusTitle').textContent = data.step || 'Processing...';
+        document.getElementById('statusDesc').textContent = data.log && data.log.length > 0
+          ? data.log[data.log.length - 1]
+          : 'Working...';
+        document.getElementById('progressFill').style.width = (data.progress || 0) + '%';
+        document.getElementById('progressText').textContent = (data.progress || 0) + '%';
+
+        const stepMap = {
+          'Extracting Document 1...': 1,
+          'Extracting Document 2...': 2,
+          'Running AI analysis...': 3,
+          'Building PDF report...': 4,
+          'Complete': 5,
+          'Error': 5,
+        };
+        const currentStep = stepMap[data.step] || 0;
+        updateTimeline(currentStep, data.progress);
+        updateStats(data);
+
+        if (data.step === 'Complete' && data.output_file) {
+          clearInterval(pollTimer);
+          setTimeout(() => showResult(data), 600);
+        } else if (data.step === 'Error') {
+          clearInterval(pollTimer);
+          document.getElementById('statusBadge').textContent = 'Error';
+          document.getElementById('statusTitle').textContent = 'Processing Failed';
+          document.getElementById('statusDesc').textContent = data.error || 'An unexpected error occurred.';
+        }
+      } catch (err) {
+        console.error('Poll error:', err);
+      }
+    }
+
+    pollTimer = setInterval(pollStatus, 800);
+    pollStatus();
+  </script>
+</body>
+</html>

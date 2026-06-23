@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DocSynth AI - Processing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-600: #0052cc;
+      --blue-500: #0065ff;
+      --blue-400: #4c8fff;
+      --blue-300: #8cb8ff;
+      --blue-200: #b3d0ff;
+      --blue-50: #e6f0ff;
+      --surface: #f4f6fa;
+      --card-bg: #ffffff;
+      --text-primary: #172b4d;
+      --text-secondary: #5e6c84;
+      --text-tertiary: #97a0af;
+      --success: #36b37e;
+      --success-bg: #e3fcef;
+      --warning: #ffab00;
+      --warning-bg: #fff8e5;
+      --disabled: #c1c7d0;
+      --shadow-sm: 0 1px 3px rgba(9,30,66,0.08), 0 0 1px rgba(9,30,66,0.12);
+      --shadow-md: 0 4px 12px rgba(9,30,66,0.1), 0 0 1px rgba(9,30,66,0.06);
+      --shadow-lg: 0 8px 24px rgba(9,30,66,0.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--surface);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      max-width: 430px;
+      margin: 0 auto;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border-bottom: 1px solid rgba(9,30,66,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-primary);
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .back-btn:hover { background: var(--blue-50); }
+
+    .back-btn svg { width: 20px; height: 20px; }
+
+    .brand {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+      margin-left: 8px;
+    }
+    .brand span { color: var(--blue-600); }
+
+    .header-spacer { flex: 1; }
+
+    .header-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--blue-600);
+      background: var(--blue-50);
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    /* Content */
+    .content {
+      flex: 1;
+      padding: 20px 20px 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Hero Section */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 8px 0 20px;
+    }
+
+    .hero-graphic {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin-bottom: 20px;
+    }
+
+    .hero-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      animation: spin 2s linear infinite;
+    }
+    .hero-ring:nth-child(1) {
+      border-top-color: var(--blue-600);
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+      border-left-color: transparent;
+      animation-duration: 1.8s;
+    }
+    .hero-ring:nth-child(2) {
+      inset: 6px;
+      border-top-color: transparent;
+      border-right-color: var(--blue-400);
+      border-bottom-color: transparent;
+      border-left-color: transparent;
+      animation-duration: 2.2s;
+      animation-direction: reverse;
+    }
+    .hero-ring:nth-child(3) {
+      inset: 12px;
+      border-top-color: transparent;
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+      border-left-color: var(--blue-200);
+      animation-duration: 2.6s;
+    }
+
+    .hero-ring.thick {
+      border-width: 4px;
+    }
+
+    .hero-inner {
+      position: absolute;
+      inset: 18px;
+      background: var(--blue-50);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .hero-inner svg {
+      width: 44px;
+      height: 44px;
+      color: var(--blue-600);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,82,204,0.1); }
+      50% { transform: scale(1.04); box-shadow: 0 0 0 12px rgba(0,82,204,0); }
+    }
+
+    .hero h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .hero p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      max-width: 320px;
+    }
+
+    /* Timeline */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-bottom: 24px;
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      background: var(--card-bg);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .timeline-item.active {
+      box-shadow: var(--shadow-md);
+      border-left: 3px solid var(--blue-600);
+    }
+
+    .timeline-item.completed {
+      opacity: 0.9;
+    }
+
+    .timeline-item.pending {
+      opacity: 0.55;
+    }
+
+    .timeline-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .timeline-icon.completed {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .timeline-icon.active {
+      background: var(--blue-50);
+      color: var(--blue-600);
+    }
+
+    .timeline-icon.pending {
+      background: #f0f2f5;
+      color: var(--disabled);
+    }
+
+    .timeline-icon svg { width: 16px; height: 16px; }
+
+    .timeline-body { flex: 1; min-width: 0; }
+
+    .timeline-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .timeline-item.active .timeline-label { color: var(--blue-600); }
+
+    .timeline-meta {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timeline-meta .dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--disabled);
+      display: inline-block;
+    }
+
+    .timeline-item.completed .timeline-meta { color: var(--success); }
+
+    .timeline-bar-wrap {
+      margin-top: 8px;
+      height: 4px;
+      background: #e9ecf2;
+      border-radius: 4px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .timeline-item.active .timeline-bar-wrap { display: block; }
+
+    .timeline-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--blue-600), var(--blue-400));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    /* Stats Cards */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 16px 16px;
+      text-align: center;
+      transition: box-shadow 0.2s;
+    }
+
+    .stat-card:hover { box-shadow: var(--shadow-md); }
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+    }
+
+    .stat-icon.blue { background: var(--blue-50); color: var(--blue-600); }
+    .stat-icon.purple { background: #f0e6ff; color: #6554c0; }
+
+    .stat-icon svg { width: 20px; height: 20px; }
+
+    .stat-count {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 4px;
+      transition: all 0.3s;
+    }
+
+    .stat-count.blue { color: var(--blue-600); }
+    .stat-count.purple { color: #6554c0; }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .stat-count.pulse {
+      animation: stat-pulse 0.4s ease;
+    }
+
+    @keyframes stat-pulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    /* Cancel Button */
+    .actions {
+      padding: 4px 0 16px;
+      text-align: center;
+    }
+
+    .cancel-btn {
+      width: 100%;
+      padding: 14px 24px;
+      border: 2px solid #e5e8ed;
+      background: var(--card-bg);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .cancel-btn:hover {
+      border-color: #ff5630;
+      color: #ff5630;
+      background: #fff5f3;
+    }
+
+    .cancel-btn:active {
+      transform: scale(0.98);
+    }
+
+    .cancel-btn svg { width: 18px; height: 18px; }
+
+    /* Security Footer */
+    .security-footer {
+      text-align: center;
+      padding: 12px 0 24px;
+    }
+
+    .security-footer p {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .security-footer svg {
+      width: 14px;
+      height: 14px;
+      color: var(--success);
+    }
+
+    /* Scrollbar */
+    .content::-webkit-scrollbar { width: 4px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: var(--disabled); border-radius: 4px; }
+
+    /* Simulate real-time updates */
+    .pulse-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--blue-600);
+      margin-right: 6px;
+      animation: blink 1s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <button class="back-btn" aria-label="Back">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <div class="brand">DocSynth <span>AI</span></div>
+    <div class="header-spacer"></div>
+    <span class="header-badge">v2.1.0</span>
+  </header>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-graphic">
+        <div class="hero-ring thick"></div>
+        <div class="hero-ring"></div>
+        <div class="hero-ring thick"></div>
+        <div class="hero-inner">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+      </div>
+      <h1>Analyzing Documents</h1>
+      <p>Our AI engine is extracting key data from your uploaded files. This usually takes less than a minute.</p>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+
+      <!-- Step 1: Completed -->
+      <div class="timeline-item completed">
+        <div class="timeline-icon completed">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-label">Scanning PDF 1</div>
+          <div class="timeline-meta">2.4 MB &bull; Complete</div>
+        </div>
+      </div>
+
+      <!-- Step 2: Completed -->
+      <div class="timeline-item completed">
+        <div class="timeline-icon completed">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-label">Scanning PDF 2</div>
+          <div class="timeline-meta">1.8 MB &bull; Complete</div>
+        </div>
+      </div>
+
+      <!-- Step 3: Active -->
+      <div class="timeline-item active">
+        <div class="timeline-icon active">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-label">Extracting text &amp; images...</div>
+          <div class="timeline-meta">
+            <span class="pulse-dot"></span> Processing
+          </div>
+          <div class="timeline-bar-wrap">
+            <div class="timeline-bar-fill" id="progressBar" style="width: 42%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Pending -->
+      <div class="timeline-item pending">
+        <div class="timeline-icon pending">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-label">Running AI Analysis</div>
+          <div class="timeline-meta">Awaiting extraction</div>
+        </div>
+      </div>
+
+      <!-- Step 5: Pending -->
+      <div class="timeline-item pending">
+        <div class="timeline-icon pending">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-label">Generating Report</div>
+          <div class="timeline-meta">Pending</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div class="stat-count blue" id="tablesCount">4</div>
+        <div class="stat-label">Tables Found</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+          </svg>
+        </div>
+        <div class="stat-count purple" id="entitiesCount">23</div>
+        <div class="stat-label">Entities Found</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="cancel-btn" id="cancelBtn">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Cancel Processing
+      </button>
+    </div>
+
+    <!-- Security Footer -->
+    <div class="security-footer">
+      <p>
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        Data is encrypted and secure.
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    (function() {
+      // Simulate real-time stat updates
+      let tables = 4;
+      let entities = 23;
+
+      function updateStats() {
+        // Increment counters
+        tables += Math.floor(Math.random() * 2);
+        entities += Math.floor(Math.random() * 4) + 1;
+
+        const tablesEl = document.getElementById('tablesCount');
+        const entitiesEl = document.getElementById('entitiesCount');
+
+        if (tablesEl) {
+          tablesEl.textContent = tables;
+          tablesEl.classList.remove('pulse');
+          void tablesEl.offsetWidth;
+          tablesEl.classList.add('pulse');
+        }
+
+        if (entitiesEl) {
+          entitiesEl.textContent = entities;
+          entitiesEl.classList.remove('pulse');
+          void entitiesEl.offsetWidth;
+          entitiesEl.classList.add('pulse');
+        }
+
+        // Also advance the progress bar
+        const bar = document.getElementById('progressBar');
+        if (bar) {
+          const current = parseFloat(bar.style.width) || 0;
+          if (current < 95) {
+            const increment = Math.random() * 8 + 2;
+            const next = Math.min(current + increment, 95);
+            bar.style.width = next + '%';
+          }
+        }
+      }
+
+      // Update every 1.8s to 3.2s
+      let timer = setTimeout(function tick() {
+        updateStats();
+        timer = setTimeout(tick, 1800 + Math.random() * 1400);
+      }, 2000);
+
+      // Cancel button handler
+      document.getElementById('cancelBtn')?.addEventListener('click', function() {
+        if (confirm('Are you sure you want to cancel document processing?')) {
+          clearTimeout(timer);
+          document.querySelector('.hero h1').textContent = 'Processing Cancelled';
+          document.querySelector('.hero p').textContent = 'You can return to the dashboard and try again.';
+          document.querySelectorAll('.timeline-item.active .timeline-bar-wrap').forEach(el => el.style.display = 'none');
+          document.querySelectorAll('.pulse-dot').forEach(el => el.style.animation = 'none');
+          this.textContent = 'Return to Dashboard';
+          this.style.borderColor = 'var(--blue-600)';
+          this.style.color = 'var(--blue-600)';
+          this.onclick = function() { window.location.reload(); };
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

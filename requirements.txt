@@ -1,0 +1,7 @@
+groq
+pymupdf
+reportlab
+flask
+pillow
+gunicorn
+python-dotenv
