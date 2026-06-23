@@ -233,28 +233,36 @@ def _fill_thermal_findings(result: dict) -> dict:
     return result
 
 
+def _assign_image_refs(result: dict, doc1_images: list, doc2_images: list) -> dict:
+    all_refs = []
+    for img in (doc1_images or []) + (doc2_images or []):
+        ref = img.get("ref", "")
+        if ref and ref not in all_refs:
+            all_refs.append(ref)
+
+    photo_refs = [r for r in all_refs if r not in all_refs[:3]]
+    if not photo_refs:
+        photo_refs = all_refs[3:] if len(all_refs) > 3 else all_refs
+
+    for i, obs in enumerate(result.get("area_observations", [])):
+        current = obs.get("image_ref", "")
+        if current and current.lower() not in ("not available", "n/a", ""):
+            if current in all_refs:
+                continue
+        if photo_refs and i < len(photo_refs):
+            obs["image_ref"] = photo_refs[i]
+        elif all_refs:
+            obs["image_ref"] = all_refs[i % len(all_refs)]
+    return result
+
+
 def analyze_documents(doc1_text: str, doc2_text: str, doc1_images: list = None, doc2_images: list = None) -> dict:
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
         print("  [WARN] GROQ_API_KEY not set - using mock data for testing")
         print("  -> Set GROQ_API_KEY to use real AI analysis")
-        # Replace mock image refs with actual extracted image refs
         result = json.loads(json.dumps(MOCK_DATA))
-        all_refs = []
-        for img in (doc1_images or []) + (doc2_images or []):
-            ref = img.get("ref", "")
-            # Skip duplicates (same xref deduplicated by extractor)
-            if ref and ref not in all_refs:
-                all_refs.append(ref)
-        # Filter to reasonable images (skip tiny ones, prefer jpeg for photos)
-        photo_refs = [r for r in all_refs if r not in all_refs[:3]]  # skip first 3 (likely logos)
-        if not photo_refs:
-            photo_refs = all_refs[3:] if len(all_refs) > 3 else all_refs
-        for i, obs in enumerate(result.get("area_observations", [])):
-            if photo_refs and i < len(photo_refs):
-                obs["image_ref"] = photo_refs[i]
-            elif all_refs:
-                obs["image_ref"] = all_refs[i % len(all_refs)]
+        result = _assign_image_refs(result, doc1_images, doc2_images)
         return _fill_thermal_findings(result)
 
     client = Groq(api_key=api_key)
@@ -296,6 +304,7 @@ Analyze both documents and return the DDR JSON only."""
             raw = _extract_json(raw)
 
             result = json.loads(raw)
+            result = _assign_image_refs(result, doc1_images, doc2_images)
             return _fill_thermal_findings(result)
 
         except json.JSONDecodeError as e:
@@ -303,14 +312,20 @@ Analyze both documents and return the DDR JSON only."""
             if attempt == 2:
                 print(f"  Raw response:\n{raw}")
                 print("  [WARN] Falling back to mock data")
-                return _fill_thermal_findings(json.loads(json.dumps(MOCK_DATA)))
+                result = json.loads(json.dumps(MOCK_DATA))
+                result = _assign_image_refs(result, doc1_images, doc2_images)
+                return _fill_thermal_findings(result)
         except AuthenticationError as e:
             print(f"  [WARN] Invalid API key - {e}")
             print("  -> Check your key at https://console.groq.com")
             print("  -> Falling back to mock data")
-            return _fill_thermal_findings(json.loads(json.dumps(MOCK_DATA)))
+            result = json.loads(json.dumps(MOCK_DATA))
+            result = _assign_image_refs(result, doc1_images, doc2_images)
+            return _fill_thermal_findings(result)
         except Exception as e:
             print(f"  Attempt {attempt + 1}: API error - {e}")
             if attempt == 2:
                 print("  [WARN] Falling back to mock data after 3 failed attempts")
-                return _fill_thermal_findings(json.loads(json.dumps(MOCK_DATA)))
+                result = json.loads(json.dumps(MOCK_DATA))
+                result = _assign_image_refs(result, doc1_images, doc2_images)
+                return _fill_thermal_findings(result)

@@ -75,18 +75,22 @@ def build_pdf_report(ddr_data: dict, images: list, output_path: str):
         if img_ref == "Not Available":
             return Paragraph("Image Not Available", S["note"])
         img_obj = find_image(img_ref)
-        if not img_obj or not img_obj.get("data"):
-            return Paragraph("Image Not Available", S["note"])
+        if not img_obj:
+            return Paragraph("Image ref not found", S["note"])
+        if not img_obj.get("data"):
+            return Paragraph("Image data missing", S["note"])
         try:
             pil = PILImage.open(BytesIO(img_obj["data"]))
             if pil.mode not in ("RGB", "L"):
                 pil = pil.convert("RGB")
             iw, ih = pil.size
             max_w = USABLE_W * 0.9
-            max_h = 120 * mm
+            max_h = 100 * mm
             scale = min(max_w / iw, max_h / ih, 1.0)
+            if scale < 0.05:
+                return Paragraph("Image too small to render", S["note"])
             buf = BytesIO()
-            pil.save(buf, format="PNG")
+            pil.save(buf, format="JPEG", quality=70)
             buf.seek(0)
             img = RLImage(buf, width=iw * scale, height=ih * scale, hAlign='CENTER')
             return img
