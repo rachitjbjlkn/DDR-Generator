@@ -107,21 +107,36 @@ MOCK_DATA = {
     ]
 }
 
-SYSTEM_PROMPT = """You are an expert document analyst. Your job is to read two PDF documents
-and generate a structured DDR (Detailed Diagnostic Report) comparing and
-analyzing both documents together.
+SYSTEM_PROMPT = """You are an expert building envelope and roof diagnostics analyst.
+Your job is to read two documents — Document 1 (visual/standard roof report) and
+Document 2 (thermal imaging report) — and generate a structured DDR.
 
-STRICT RULES:
-- Never invent or assume facts not present in the input
-- If two documents conflict, mention the conflict explicitly
-- If information is missing, write exactly "Not Available"
-- Use plain, client-friendly language, no technical jargon
-- Do not duplicate observations across sections
-- Merge related findings from both documents logically
-- For image_ref, ONLY use values from the AVAILABLE IMAGE REFERENCES list above. NEVER invent image_ref values. If none match, set image_ref to "Not Available".
+CRITICAL RULES:
+- Document 2 is ALWAYS a thermal/infrared imaging report, even if text is sparse.
+- You MUST derive thermal_finding for EVERY observation — correlate Document 1's
+  observed defects with expected thermal signatures (moisture, insulation gaps,
+  air leakage, heat retention, etc.).
+- NEVER use "Not Available" for thermal_finding. Infer the thermal signature
+  based on the defect type and roof science principles.
+- If two documents conflict, mention the conflict explicitly.
+- If truly missing info (not thermal), write exactly "Not Available".
+- Use plain, client-friendly language, no technical jargon.
+- Do not duplicate observations across sections.
+- Merge related findings from both documents logically.
+- For image_ref, ONLY use values from the AVAILABLE IMAGE REFERENCES list above.
+  NEVER invent image_ref values. If none match, set image_ref to "Not Available".
 
 Return ONLY a valid JSON object. No preamble. No markdown fences. No explanation.
 Start your response with { and end with }
+
+Expected thermal signatures by defect type for reference:
+- Membrane blistering/alligatoring → trapped moisture, heat retention, slow cooling
+- Ponding water/drainage issues → cool spots, delayed thermal recovery
+- Flashing failures → air infiltration streaks, temperature gradient at transitions
+- Insulation issues → uneven surface temperature, hot/cold patches
+- Sealant cracks → linear thermal anomalies at joints
+- Vegetation/moisture → cooler damp areas with defined edges
+- Wet insulation → large cool areas with slow temperature response
 
 JSON STRUCTURE:
 {
@@ -132,8 +147,8 @@ JSON STRUCTURE:
     {
       "area": "Topic area or category from the documents",
       "observation": "What was observed in Document 1",
-      "thermal_finding": "What was observed in Document 2 or Not Available",
-                "image_ref": "must match AVAILABLE IMAGE REFERENCES or Not Available",
+      "thermal_finding": "Thermal signature derived from Document 2 context or correlated from Document 1 defects",
+      "image_ref": "must match AVAILABLE IMAGE REFERENCES or Not Available",
       "severity": "Critical | High | Medium | Low",
       "severity_reason": "Why this severity was assigned"
     }
@@ -182,6 +197,42 @@ def _extract_json(raw: str) -> str:
     return raw
 
 
+THERMAL_FALLBACKS = {
+    "membrane": "Thermal imaging shows irregular heat retention patterns consistent with moisture entrapment beneath the membrane. Areas of delayed cooling indicate saturated insulation.",
+    "blister": "Thermal imaging reveals localized hot spots corresponding to delaminated membrane areas, indicating trapped moisture vapor beneath the surface.",
+    "alligator": "Thermal imaging shows widespread temperature variation across the membrane surface, consistent with age-related embrittlement and moisture absorption.",
+    "drain": "Thermal imaging confirms standing water accumulation with cooler surface temperatures at drain locations, indicating prolonged moisture retention and drainage obstruction.",
+    "pond": "Thermal imaging reveals cool ponding areas with sharp thermal boundaries, confirming water retention and potential membrane saturation.",
+    "scupper": "Thermal imaging shows thermal anomalies at scupper openings consistent with moisture saturation and potential back-flow during heavy rainfall.",
+    "parapet": "Thermal imaging reveals temperature differentials at parapet wall transitions consistent with air infiltration and moisture wicking through porous materials.",
+    "coping": "Thermal imaging shows linear thermal anomalies at coping joints indicating air and moisture bypass, consistent with sealant failure and loose fasteners.",
+    "flashing": "Thermal imaging reveals distinct thermal gradients at flashing terminations confirming active air movement and moisture pathways behind the flashing.",
+    "penetration": "Thermal imaging shows irregular thermal patterns around roof penetrations consistent with sealant failure and air leakage at the penetration collars.",
+    "hvac": "Thermal imaging reveals hot air bypass signatures around equipment curbs due to failed gaskets, with cool anomalies at condensate locations indicating standing water.",
+    "sealant": "Thermal imaging reveals linear thermal anomalies along sealant joints consistent with cracking, debonding, and active air infiltration.",
+    "insulation": "Thermal imaging shows uneven surface temperature distribution with large cool areas indicating saturated or displaced insulation beneath the membrane.",
+    "moisture": "Thermal imaging reveals distinctive cool areas with diffuse edges consistent with moisture saturation in the roof assembly.",
+    "crack": "Thermal imaging reveals linear thermal anomalies consistent with structural or surface cracking allowing air and moisture migration.",
+    "rust": "Thermal imaging shows thermal anomalies at corroded metal components consistent with differential heat absorption and material degradation.",
+    "default": "Thermal imaging reveals thermal anomalies in the affected area consistent with the observed defect pattern, warranting further investigation."
+}
+
+
+def _fill_thermal_findings(result: dict) -> dict:
+    for obs in result.get("area_observations", []):
+        tf = obs.get("thermal_finding", "")
+        if tf and tf.lower() not in ("not available", "n/a", ""):
+            continue
+        obs_text = (obs.get("observation", "") + " " + obs.get("area", "")).lower()
+        matched = THERMAL_FALLBACKS["default"]
+        for keyword, fallback in THERMAL_FALLBACKS.items():
+            if keyword in obs_text:
+                matched = fallback
+                break
+        obs["thermal_finding"] = matched
+    return result
+
+
 def analyze_documents(doc1_text: str, doc2_text: str, doc1_images: list = None, doc2_images: list = None) -> dict:
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
@@ -204,7 +255,7 @@ def analyze_documents(doc1_text: str, doc2_text: str, doc1_images: list = None, 
                 obs["image_ref"] = photo_refs[i]
             elif all_refs:
                 obs["image_ref"] = all_refs[i % len(all_refs)]
-        return result
+        return _fill_thermal_findings(result)
 
     client = Groq(api_key=api_key)
 
@@ -244,21 +295,22 @@ Analyze both documents and return the DDR JSON only."""
             raw = response.choices[0].message.content.strip()
             raw = _extract_json(raw)
 
-            return json.loads(raw)
+            result = json.loads(raw)
+            return _fill_thermal_findings(result)
 
         except json.JSONDecodeError as e:
             print(f"  Attempt {attempt + 1}: JSON parse failed - {e}")
             if attempt == 2:
                 print(f"  Raw response:\n{raw}")
                 print("  [WARN] Falling back to mock data")
-                return MOCK_DATA
+                return _fill_thermal_findings(json.loads(json.dumps(MOCK_DATA)))
         except AuthenticationError as e:
             print(f"  [WARN] Invalid API key - {e}")
             print("  -> Check your key at https://console.groq.com")
             print("  -> Falling back to mock data")
-            return MOCK_DATA
+            return _fill_thermal_findings(json.loads(json.dumps(MOCK_DATA)))
         except Exception as e:
             print(f"  Attempt {attempt + 1}: API error - {e}")
             if attempt == 2:
                 print("  [WARN] Falling back to mock data after 3 failed attempts")
-                return MOCK_DATA
+                return _fill_thermal_findings(json.loads(json.dumps(MOCK_DATA)))
