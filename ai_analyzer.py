@@ -276,18 +276,22 @@ def analyze_documents(doc1_text: str, doc2_text: str, doc1_images: list = None, 
     if sampled:
         image_refs_hint = "\n\nAVAILABLE IMAGE REFERENCES (use only these refs in image_ref fields):\n" + "\n".join(sampled)
 
-    user_prompt = f"""DOCUMENT 1 TEXT:
-{doc1_text[:4000]}
+    user_prompt = f"""DOCUMENT 1 (Visual/Standard Roof Report) TEXT:
+{doc1_text[:15000]}
 
 ---
 
-DOCUMENT 2 TEXT:
-{doc2_text[:4000]}
+DOCUMENT 2 (Thermal/Infrared Imaging Report) TEXT:
+{doc2_text[:15000]}
+
+Note: Thermal PDFs may have limited extractable text since images carry the thermal data.
+Use the document context and roof science principles to derive thermal findings.
 {image_refs_hint}
 
 ---
 
-Analyze both documents and return the DDR JSON only."""
+Analyze both documents and return the DDR JSON only. Include at least 4-6 area observations."""
+
 
     for attempt in range(3):
         try:
@@ -298,7 +302,7 @@ Analyze both documents and return the DDR JSON only."""
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=0.2,
-                max_tokens=3000,
+                max_tokens=6000,
             )
 
             raw = response.choices[0].message.content.strip()
